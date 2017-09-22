@@ -1,0 +1,25 @@
+name:                atomic-generic
+version:             0.6.0.0
+synopsis:            Generic rendering and parsing utilties. 
+homepage:            github.com/grumply/atomic-generic
+license:             BSD3
+license-file:        LICENSE
+author:              S. M. Hickman
+maintainer:          sean@grump.ly
+category:            Web
+build-type:          Simple
+cabal-version:       >=1.10
+
+library
+  exposed-modules:
+    Atomic.ToHTML
+    Atomic.ToXML
+    Atomic.FromXML
+  build-depends:
+      base >=4.8
+    , atomic-base
+    , atomic-types
+  if (impl(ghcjs))
+    cpp-options: -DGHCJS_BROWSER
+  hs-source-dirs:      src
+  default-language: Haskell2010
