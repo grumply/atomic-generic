@@ -1,7 +1,13 @@
 {-# language DefaultSignatures #-}
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE TypeSynonymInstances #-}
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE OverloadedStrings #-}
 module Atomic.ToXML where
 
-import Atomic.Base
+import Base
 import View
 
 import Data.List as List

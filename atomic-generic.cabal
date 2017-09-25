@@ -17,8 +17,7 @@ library
     Atomic.FromXML
   build-depends:
       base >=4.8
-    , atomic-base
-    , atomic-types
+    , atomic
   if (impl(ghcjs))
     cpp-options: -DGHCJS_BROWSER
   hs-source-dirs:      src
