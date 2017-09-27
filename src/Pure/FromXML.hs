@@ -6,10 +6,12 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables #-}
-module Atomic.FromXML where
+{-# LANGUAGE PolyKinds #-}
+{-# LANGUAGE TypeFamilies #-}
+module Pure.FromXML where
 
-import Base
-import View
+import Pure.Data
+import Pure.View
 
 import Data.List as List
 import Data.List.NonEmpty as NonEmpty
@@ -23,7 +25,7 @@ import Unsafe.Coerce
 class FromXML a where
   parseXML :: [View ms] -> ([View ms],Maybe a)
   default parseXML :: (Generic a, GFromXML (Rep a)) => [View ms] -> ([View ms],Maybe a)
-  parseXML vs = fmap (fmap to) $ gparseXML vs
+  parseXML vs = fmap (fmap G.to) $ gparseXML vs
 
 instance FromXML Bool where
   parseXML vs@(TextView _ t : rest) =
@@ -42,6 +44,13 @@ instance FromXML Int where
       Just i -> (rest,Just i)
       _ -> (vs,Nothing)
 
+instance FromXML Integer where
+  parseXML [] = ([],Nothing)
+  parseXML vs@(TextView _ t : rest) =
+    case readMaybe (fromTxt t) of
+      Just i -> (rest,Just i)
+      _      -> (vs,Nothing)
+
 instance FromXML Double where
   parseXML [] = ([],Nothing)
   parseXML vs@(TextView _ t : rest) =
@@ -53,7 +62,11 @@ instance FromXML Txt where
   parseXML (TextView _ t : rest) = (rest,Just t)
   parseXML vs = (vs,Nothing)
 
-instance FromXML a => FromXML [a] where
+instance {-# OVERLAPPING #-} FromXML String where
+  parseXML (TextView _ t : rest) = (rest,Just $ fromTxt t)
+  parseXML vs = (vs,Nothing)
+
+instance {-# OVERLAPPABLE #-} FromXML a => FromXML [a] where
   parseXML vs = go [] vs
     where
       go acc vs =
@@ -73,6 +86,19 @@ instance FromXML a => FromXML (Maybe a) where
     case parseXML vs of
       (rest,Just a) -> (rest,Just (Just a))
       _ -> (vs,Just Nothing)
+
+type family Equal (a :: k) (b :: k) :: Bool where
+  Equal a a = 'True
+  Equal a b = 'False
+
+instance (Equal a b ~ 'False, FromXML a, FromXML b) => FromXML (Either a b) where
+  -- will fail to parse Right in case of Either a a
+  parseXML vs =
+    case parseXML vs of
+      (rest,Just a) -> (rest,Just (Left a))
+      _ -> case parseXML vs of
+             (rest,Just b) -> (rest,Just (Right b))
+             _             -> (vs,Nothing)
 
 instance (FromXML a, FromXML b) => FromXML (a,b) where
   parseXML [] = ([],Nothing)
@@ -192,8 +218,8 @@ instance (GFromXML a, G.Constructor t) => GFromXML (G.M1 C t a) where
       (inp,Nothing)
   gparseXML vs = (vs,Nothing)
 
--- instance GFromXML G.U1 where
---   gparseXML vs = (vs,Just (from (G.U1 :: G.U1 x)))
+instance GFromXML G.U1 where
+  gparseXML vs = (vs,Just (G.U1 :: G.U1 x))
 
 instance (FromXML a) => GFromXML (G.K1 i a) where
   gparseXML vs = fmap (fmap G.K1) (parseXML vs)

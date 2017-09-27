@@ -5,10 +5,12 @@
 {-# LANGUAGE TypeSynonymInstances #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE OverloadedStrings #-}
-module Atomic.ToHTML where
+{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE PolyKinds #-}
+module Pure.ToHTML where
 
-import Base
-import View
+import Pure.Data
+import Pure.View
 
 import Data.Char
 import Data.List as List
@@ -19,7 +21,7 @@ import GHC.Generics as G
 class ToHTML a where
   toHTML :: a -> [View ms]
   default toHTML :: (Generic a, GToHTML (Rep a)) => a -> [View ms]
-  toHTML = gtoHTML . from
+  toHTML = gtoHTML . G.from
 
 instance ToHTML Bool where
   toHTML True = [ TextView Nothing "true" ]
@@ -28,13 +30,19 @@ instance ToHTML Bool where
 instance ToHTML Int where
   toHTML i = [ TextView Nothing (toTxt i) ]
 
+instance ToHTML Integer where
+  toHTML i = [ TextView Nothing (toTxt i) ]
+
 instance ToHTML Double where
   toHTML d = [ TextView Nothing (toTxt d) ]
 
 instance ToHTML Txt where
   toHTML t = [ TextView Nothing t ]
 
-instance ToHTML a => ToHTML [a] where
+instance {-# OVERLAPPING #-} ToHTML String where
+  toHTML s = [ TextView Nothing (toTxt s) ]
+
+instance {-# OVERLAPPABLE #-} ToHTML a => ToHTML [a] where
   toHTML = List.concatMap toHTML
 
 instance ToHTML a => ToHTML (NonEmpty.NonEmpty a) where
@@ -43,6 +51,14 @@ instance ToHTML a => ToHTML (NonEmpty.NonEmpty a) where
 instance ToHTML a => ToHTML (Maybe a) where
   toHTML (Just a) = toHTML a
   toHTML Nothing = []
+
+type family Equal (a :: k) (b :: k) :: Bool where
+  Equal a a = 'True
+  Equal a b = 'False
+
+instance (Equal a b ~ 'False, ToHTML a, ToHTML b) => ToHTML (Either a b) where
+  toHTML (Left  a) = toHTML a
+  toHTML (Right b) = toHTML b
 
 instance (ToHTML a, ToHTML b) => ToHTML (a,b) where
   toHTML (a,b) = toHTML a <> toHTML b

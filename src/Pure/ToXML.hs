@@ -5,10 +5,12 @@
 {-# LANGUAGE TypeSynonymInstances #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE OverloadedStrings #-}
-module Atomic.ToXML where
+{-# LANGUAGE PolyKinds #-}
+{-# LANGUAGE TypeFamilies #-}
+module Pure.ToXML where
 
-import Base
-import View
+import Pure.Data
+import Pure.View
 
 import Data.List as List
 import Data.List.NonEmpty as NonEmpty
@@ -18,13 +20,16 @@ import GHC.Generics as G
 class ToXML a where
   toXML :: a -> [View '[]]
   default toXML :: (Generic a, GToXML (Rep a)) => a -> [View '[]]
-  toXML = gtoXML . from
+  toXML = gtoXML . G.from
 
 instance ToXML Bool where
-  toXML True = [ TextView Nothing "true" ]
+  toXML True  = [ TextView Nothing "true"  ]
   toXML False = [ TextView Nothing "false" ]
 
 instance ToXML Int where
+  toXML i = [ TextView Nothing (toTxt i) ]
+
+instance ToXML Integer where
   toXML i = [ TextView Nothing (toTxt i) ]
 
 instance ToXML Double where
@@ -33,7 +38,10 @@ instance ToXML Double where
 instance ToXML Txt where
   toXML t = [ TextView Nothing t ]
 
-instance ToXML a => ToXML [a] where
+instance {-# OVERLAPPING #-} ToXML String where
+  toXML s = [ TextView Nothing (toTxt s) ]
+
+instance {-# OVERLAPPABLE #-} ToXML a => ToXML [a] where
   toXML = List.concatMap toXML
 
 instance ToXML a => ToXML (NonEmpty.NonEmpty a) where
@@ -42,6 +50,14 @@ instance ToXML a => ToXML (NonEmpty.NonEmpty a) where
 instance ToXML a => ToXML (Maybe a) where
   toXML (Just a) = toXML a
   toXML Nothing = []
+
+type family Equal (a :: k) (b :: k) :: Bool where
+  Equal a a = 'True
+  Equal a b = 'False
+
+instance (Equal a b ~ 'False, ToXML a, ToXML b) => ToXML (Either a b) where
+  toXML (Left  a) = toXML a
+  toXML (Right b) = toXML b
 
 instance (ToXML a, ToXML b) => ToXML (a,b) where
   toXML (a,b) = toXML a <> toXML b
@@ -86,8 +102,8 @@ instance (GToXML f, G.Constructor t) => GToXML (G.M1 C t f) where
   gtoXML m1@(G.M1 m) =
     [ HTMLView Nothing (toTxt $ conName m1) [] (gtoXML m) ]
 
--- instance GToXML G.U1 where
---   gtoXML _ = []
+instance GToXML G.U1 where
+  gtoXML _ = []
 
 instance (GToXML a, GToXML b) => GToXML (a :*: b) where
   gtoXML (a :*: b) = gtoXML a <> gtoXML b

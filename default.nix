@@ -1,4 +1,9 @@
-{ compiler ? "ghc821" }:
+{ compiler ? "ghc821"
+, secure ? false
+, debugws ? false
+, devel ? false
+, debugapi ? false
+}:
 
 let
   config = {
@@ -17,20 +22,14 @@ let
               ef-base =
                 new.callPackage ./deps/ef-base/ef-base.nix { };
 
-              atomic-base =
-                new.callPackage ./deps/atomic-base/atomic-base.nix { };
-
               trivial =
                 new.callPackage ./deps/trivial/trivial.nix { };
 
-              atomic-types =
-                new.callPackage ./deps/atomic-types/atomic-types.nix { };
+              pure =
+                new.callPackage ./deps/pure/pure.nix { secure=secure; debugws=debugws; devel=devel; debugapi=debugapi; };
 
-              atomic-html =
-                new.callPackage ./deps/atomic-html/atomic-html.nix { };
-
-              atomic-generic =
-                new.callPackage ./atomic-generic.nix { };
+              pure-xml =
+                new.callPackage ./pure-xml.nix { };
 
             };
           };
@@ -44,9 +43,9 @@ let
 in
   { ef = pkgs.haskell.packages.${compiler}.ef;
     ef-base = pkgs.haskell.packages.${compiler}.ef-base;
-    atomic-types = pkgs.haskell.packages.${compiler}.atomic-types;
-    atomic-base = pkgs.haskell.packages.${compiler}.atomic-base;
     tlc = pkgs.haskell.packages.${compiler}.tlc;
     trivial = pkgs.haskell.packages.${compiler}.trivial;
+    pure = pkgs.haskell.packages.${compiler}.pure;
+    pure-xml = pkgs.haskell.packages.${compiler}.pure-xml;
   }
 

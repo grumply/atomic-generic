@@ -1,7 +1,7 @@
-name:                atomic-generic
+name:                pure-xml
 version:             0.6.0.0
-synopsis:            Generic rendering and parsing utilties. 
-homepage:            github.com/grumply/atomic-generic
+synopsis:            Generic XML rendering and parsing utilties.
+homepage:            github.com/grumply/pure-generic
 license:             BSD3
 license-file:        LICENSE
 author:              S. M. Hickman
@@ -12,12 +12,12 @@ cabal-version:       >=1.10
 
 library
   exposed-modules:
-    Atomic.ToHTML
-    Atomic.ToXML
-    Atomic.FromXML
+    Pure.ToHTML
+    Pure.ToXML
+    Pure.FromXML
   build-depends:
       base >=4.8
-    , atomic
+    , pure
   if (impl(ghcjs))
     cpp-options: -DGHCJS_BROWSER
   hs-source-dirs:      src
