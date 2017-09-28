@@ -10,19 +10,7 @@
 	path = deps/ef-base
 	url = https://github.com/grumply/ef-base.git
 	branch = master
-[submodule "deps/atomic-base"]
-	path = deps/atomic-base
-	url = https://github.com/grumply/atomic-base.git
-	branch = master
 [submodule "deps/trivial"]
 	path = deps/trivial
 	url = https://github.com/grumply/trivial.git
-	branch = master
-[submodule "deps/atomic-types"]
-	path = deps/atomic-types
-	url = https://github.com/grumply/atomic-types.git
-	branch = master
-[submodule "deps/atomic-html"]
-	path = deps/atomic-html
-	url = https://github.com/grumply/atomic-html.git
 	branch = master
