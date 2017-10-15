@@ -38,10 +38,7 @@ instance ToXML Double where
 instance ToXML Txt where
   toXML t = [ TextView Nothing t ]
 
-instance {-# OVERLAPPING #-} ToXML String where
-  toXML s = [ TextView Nothing (toTxt s) ]
-
-instance {-# OVERLAPPABLE #-} ToXML a => ToXML [a] where
+instance ToXML a => ToXML [a] where
   toXML = List.concatMap toXML
 
 instance ToXML a => ToXML (NonEmpty.NonEmpty a) where

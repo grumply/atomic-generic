@@ -39,10 +39,7 @@ instance ToHTML Double where
 instance ToHTML Txt where
   toHTML t = [ TextView Nothing t ]
 
-instance {-# OVERLAPPING #-} ToHTML String where
-  toHTML s = [ TextView Nothing (toTxt s) ]
-
-instance {-# OVERLAPPABLE #-} ToHTML a => ToHTML [a] where
+instance ToHTML a => ToHTML [a] where
   toHTML = List.concatMap toHTML
 
 instance ToHTML a => ToHTML (NonEmpty.NonEmpty a) where

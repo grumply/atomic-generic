@@ -62,11 +62,7 @@ instance FromXML Txt where
   parseXML (TextView _ t : rest) = (rest,Just t)
   parseXML vs = (vs,Nothing)
 
-instance {-# OVERLAPPING #-} FromXML String where
-  parseXML (TextView _ t : rest) = (rest,Just $ fromTxt t)
-  parseXML vs = (vs,Nothing)
-
-instance {-# OVERLAPPABLE #-} FromXML a => FromXML [a] where
+instance FromXML a => FromXML [a] where
   parseXML vs = go [] vs
     where
       go acc vs =
