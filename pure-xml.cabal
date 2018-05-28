@@ -1,10 +1,10 @@
 name:                pure-xml
-version:             0.6.0.0
+version:             0.7.0.0
 synopsis:            Generic XML rendering and parsing utilties.
-homepage:            github.com/grumply/pure-generic
+homepage:            github.com/grumply/pure-xml
 license:             BSD3
 license-file:        LICENSE
-author:              S. M. Hickman
+author:              Sean Mackenzie
 maintainer:          sean@grump.ly
 category:            Web
 build-type:          Simple
@@ -15,10 +15,13 @@ library
     Pure.ToHTML
     Pure.ToXML
     Pure.FromXML
+
   build-depends:
-      base >=4.8
-    , pure
-  if (impl(ghcjs))
-    cpp-options: -DGHCJS_BROWSER
+    base >= 4.8 && < 5,
+    pure-core >= 0.7 && < 1,
+    pure-txt >= 0.7 && < 1
+
+
   hs-source-dirs:      src
+
   default-language: Haskell2010

@@ -9,18 +9,23 @@
 {-# LANGUAGE PolyKinds #-}
 module Pure.ToHTML where
 
-import Pure.Data
-import Pure.View
+-- from pure-core
+import Pure.Data.View
+import Pure.Data.View.Patterns
 
+-- from pure-txt
+import Pure.Data.Txt
+
+-- from base
 import Data.Char
-import Data.List as List
-import Data.List.NonEmpty as NonEmpty
-
+import qualified Data.List as List
+import qualified Data.List.NonEmpty as NonEmpty
+import Data.Monoid
 import GHC.Generics as G
 
 class ToHTML a where
-  toHTML :: a -> [View ms]
-  default toHTML :: (Generic a, GToHTML (Rep a)) => a -> [View ms]
+  toHTML :: a -> [View]
+  default toHTML :: (Generic a, GToHTML (Rep a)) => a -> [View]
   toHTML = gtoHTML . G.from
 
 instance ToHTML Bool where
@@ -88,7 +93,7 @@ instance (ToHTML a, ToHTML b, ToHTML c, ToHTML d, ToHTML e, ToHTML f, ToHTML g, 
   toHTML (a,b,c,d,e,f,g,h,i,j,k) = toHTML a <> toHTML b <> toHTML c <> toHTML d <> toHTML e <> toHTML f <> toHTML g <> toHTML h <> toHTML i <> toHTML j <> toHTML k
 
 class GToHTML a where
-  gtoHTML :: a x -> [View ms]
+  gtoHTML :: a x -> [View]
 
 instance (GToHTML f) => GToHTML (G.M1 D t f) where
   gtoHTML (G.M1 m) = gtoHTML m
@@ -98,7 +103,7 @@ instance (GToHTML f, Selector t) => GToHTML (G.M1 S t f) where
 
 instance (GToHTML f, G.Constructor t) => GToHTML (G.M1 C t f) where
   gtoHTML m1@(G.M1 m) =
-    [ Div [ ClassList [ toTxt $ conName m1 ] ] (gtoHTML m) ]
+    [ SimpleHTML "div" <| Class (toTxt $ conName m1) |> gtoHTML m ]
 
 instance GToHTML G.U1 where
   gtoHTML _ = []

@@ -9,17 +9,21 @@
 {-# LANGUAGE TypeFamilies #-}
 module Pure.ToXML where
 
-import Pure.Data
-import Pure.View
+-- from pure-core
+import Pure.Data.View
 
+-- from pure-txt
+import Pure.Data.Txt
+
+-- from base
 import Data.List as List
 import Data.List.NonEmpty as NonEmpty
-
+import Data.Monoid
 import GHC.Generics as G
 
 class ToXML a where
-  toXML :: a -> [View '[]]
-  default toXML :: (Generic a, GToXML (Rep a)) => a -> [View '[]]
+  toXML :: a -> [View]
+  default toXML :: (Generic a, GToXML (Rep a)) => a -> [View]
   toXML = gtoXML . G.from
 
 instance ToXML Bool where
@@ -87,7 +91,7 @@ instance (ToXML a, ToXML b, ToXML c, ToXML d, ToXML e, ToXML f, ToXML g, ToXML h
   toXML (a,b,c,d,e,f,g,h,i,j,k) = toXML a <> toXML b <> toXML c <> toXML d <> toXML e <> toXML f <> toXML g <> toXML h <> toXML i <> toXML j <> toXML k
 
 class GToXML a where
-  gtoXML :: a x -> [View '[]]
+  gtoXML :: a x -> [View]
 
 instance (GToXML f) => GToXML (G.M1 D t f) where
   gtoXML (G.M1 m) = gtoXML m
@@ -97,7 +101,7 @@ instance (GToXML f) => GToXML (G.M1 S t f) where
 
 instance (GToXML f, G.Constructor t) => GToXML (G.M1 C t f) where
   gtoXML m1@(G.M1 m) =
-    [ HTMLView Nothing (toTxt $ conName m1) [] (gtoXML m) ]
+    [ HTMLView Nothing (toTxt $ conName m1) mempty (gtoXML m) ]
 
 instance GToXML G.U1 where
   gtoXML _ = []

@@ -10,21 +10,23 @@
 {-# LANGUAGE TypeFamilies #-}
 module Pure.FromXML where
 
-import Pure.Data
-import Pure.View
+-- from pure-core
+import Pure.Data.View
 
-import Data.List as List
-import Data.List.NonEmpty as NonEmpty
+-- from pure-txt
+import Pure.Data.Txt
 
+-- from base
+import Data.Char
+import qualified Data.List as List
+import qualified Data.List.NonEmpty as NonEmpty
+import Data.Monoid
 import GHC.Generics as G
-
 import Text.Read
 
-import Unsafe.Coerce
-
 class FromXML a where
-  parseXML :: [View ms] -> ([View ms],Maybe a)
-  default parseXML :: (Generic a, GFromXML (Rep a)) => [View ms] -> ([View ms],Maybe a)
+  parseXML :: [View] -> ([View],Maybe a)
+  default parseXML :: (Generic a, GFromXML (Rep a)) => [View] -> ([View],Maybe a)
   parseXML vs = fmap (fmap G.to) $ gparseXML vs
 
 instance FromXML Bool where
@@ -196,7 +198,7 @@ instance (FromXML a, FromXML b, FromXML c, FromXML d, FromXML e, FromXML f, From
       _ -> (vs,Nothing)
 
 class GFromXML a where
-  gparseXML :: [View ms] -> ([View ms],Maybe (a x))
+  gparseXML :: [View] -> ([View],Maybe (a x))
 
 instance (GFromXML a) => GFromXML (G.M1 D t a) where
   gparseXML vs = fmap (fmap G.M1) $ gparseXML vs
